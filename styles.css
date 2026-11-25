@@ -59,6 +59,7 @@ body {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .tab {
@@ -78,8 +79,20 @@ body {
   border-color: #1d4ed8;
 }
 
+.selector-movil {
+  margin-left: auto;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
 .contenedor {
-  max-width: 900px;
+  max-width: 860px;
   margin: 24px auto;
   padding: 0 16px;
 }
@@ -157,6 +170,7 @@ input, select {
   border: 1px solid #94a3b8;
   border-radius: 6px;
   font-size: 0.95rem;
+  background-color: #ffffff;
 }
 
 .resumen-stock {
@@ -296,12 +310,19 @@ button {
 }
 
 .oculto {
-  display: none;
+  display: none !important;
 }
 
 @media (max-width: 720px) {
   .kpis-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .selector-movil {
+    margin-left: 0;
+    width: 100%;
+  }
+  .selector-movil select {
+    width: 100%;
   }
 }
 
