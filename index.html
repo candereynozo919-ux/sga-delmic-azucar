@@ -1,39 +1,95 @@
-<!DOCTYPE html><!--
-  Licensed to the Apache Software Foundation (ASF) under one or more
-  contributor license agreements.  See the NOTICE file distributed with
-  this work for additional information regarding copyright ownership.
-  The ASF licenses this file to You under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with
-  the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
--->
-<html>
+<!DOCTYPE html>
+<html lang="es">
 <head>
-<meta charset="UTF-8" />
-<title>Sample "Hello, World" Application</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SGA Delmic Azúcar - Prototipo</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="badge-marca">DELMIC</span>
+      <div>
+        <h1>Sistema de Control de Stock y Ventas</h1>
+        <p>Azúcar Común Tipo "A" · Fraccionamiento y comercialización</p>
+      </div>
+    </div>
+    <div class="rol-box">
+      <span>Rol activo:</span>
+      <strong>Personal de Finanzas</strong>
+    </div>
+  </header>
 
-<div style="float: left; padding: 10px;">
-<img src="images/tomcat.gif" alt="" />
-</div>
-<h1>Sample "Hello, World" Application</h1>
-<p>This is the home page for a sample application used to illustrate the
-source directory organization of a web application utilizing the principles
-outlined in the Application Developer's Guide.
+  <nav class="menu-casos">
+    <button class="tab active" type="button" data-caso="cu5">CU 5: Registrar Venta (10 kg)</button>
+    <button class="tab" type="button" data-caso="prox">Próximos Casos de Uso</button>
+  </nav>
 
-<p>To prove that they work, you can execute either of the following links:</p>
-<ul>
-<li>To a <a href="hello.jsp">JSP page</a>.</li>
-<li>To a <a href="hello">servlet</a>.</li>
-</ul>
+  <main class="contenedor">
+    <section id="vista-cu5" class="card">
+      <div class="card-header">
+        <h2>Registrar Venta de Fardos de 10 kg</h2>
+        <span class="nro-venta" id="nroVentaDisplay">N° Venta: V-00128</span>
+      </div>
 
+      <form id="formVenta" class="form-grid">
+        <div class="campo">
+          <label for="cliente">Cliente</label>
+          <select id="cliente">
+            <option value="Distribuidora Norte|Mayorista">Distribuidora Norte (Mayorista)</option>
+            <option value="Almacén Central Concepción|Minorista">Almacén Central Concepción (Minorista)</option>
+            <option value="Despensa El Sur|Minorista">Despensa El Sur (Minorista)</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="fechaVenta">Fecha</label>
+          <input type="date" id="fechaVenta" value="2026-11-25" required />
+        </div>
+
+        <div class="campo">
+          <label for="formaPago">Forma de pago</label>
+          <select id="formaPago">
+            <option value="Transferencia">Transferencia</option>
+            <option value="Efectivo">Efectivo</option>
+            <option value="Débito / Posnet">Débito / Posnet</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="cantidadFardos">Cantidad de fardos (10 kg)</label>
+          <input type="number" id="cantidadFardos" min="1" placeholder="Ej: 50" required />
+        </div>
+
+        <div class="resumen-stock full-width">
+          <div><strong>Producto:</strong> Fardo Delmic de 10 kg (10 bolsas de 1 kg)</div>
+          <div><strong>Stock disponible:</strong> <span id="stockDisponible">250</span> fardos</div>
+          <div><strong>Precio unitario:</strong> $<span id="precioUnitario">18500</span></div>
+          <div><strong>Total estimado:</strong> $<span id="totalEstimado">0</span></div>
+        </div>
+
+        <div id="mensajeEstado" class="alerta full-width oculto"></div>
+
+        <div class="acciones full-width">
+          <button type="button" id="btnLimpiar" class="btn-secundario">Cancelar / Limpiar</button>
+          <button type="submit" class="btn-primario">Confirmar y Registrar</button>
+        </div>
+      </form>
+
+      <div id="comprobanteBox" class="comprobante oculto"></div>
+    </section>
+
+    <section id="vista-prox" class="card oculto">
+      <h2>Próximos Casos de Uso del SGA Delmic</h2>
+      <p>
+        Espacio reservado para sumar <strong>CU 1</strong> (Recepción de Materia Prima),
+        <strong>CU 2</strong> (Asignar Depósito), <strong>CU 3</strong> (Fraccionamiento),
+        <strong>CU 4</strong> (Bajas / Mermas con PIN de Supervisor) y <strong>CU 6</strong> (Reporte Estratégico).
+      </p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
 </body>
 </html>
