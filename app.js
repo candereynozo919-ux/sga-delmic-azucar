@@ -1,98 +1,312 @@
-let stockFardos = 250;
-const precioUnitario = 18500;
-let correlativoVenta = 128;
-
-const inputCantidad = document.getElementById("cantidadFardos");
-const spanStock = document.getElementById("stockDisponible");
-const spanTotal = document.getElementById("totalEstimado");
-const mensajeEstado = document.getElementById("mensajeEstado");
-const comprobanteBox = document.getElementById("comprobanteBox");
-const formVenta = document.getElementById("formVenta");
-const btnLimpiar = document.getElementById("btnLimpiar");
-const nroVentaDisplay = document.getElementById("nroVentaDisplay");
-
-function actualizarTotalEstimado() {
-  const cant = Number(inputCantidad.value) || 0;
-  const total = cant * precioUnitario;
-  spanTotal.textContent = total.toLocaleString("es-AR");
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
 }
 
-function mostrarAlerta(texto, tipo) {
-  mensajeEstado.textContent = texto;
-  mensajeEstado.className = `alerta full-width ${tipo === "error" ? "alerta-error" : "alerta-ok"}`;
+body {
+  background-color: #f1f5f9;
+  color: #0f172a;
 }
 
-function ocultarAlerta() {
-  mensajeEstado.className = "alerta full-width oculto";
-  mensajeEstado.textContent = "";
+.topbar {
+  background: linear-gradient(90deg, #0f294a, #1d4ed8);
+  color: #ffffff;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-inputCantidad.addEventListener("input", () => {
-  ocultarAlerta();
-  actualizarTotalEstimado();
-});
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
 
-formVenta.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const cant = Number(inputCantidad.value);
-  const [clienteNombre, tipoCliente] = document.getElementById("cliente").value.split("|");
-  const fecha = document.getElementById("fechaVenta").value;
-  const formaPago = document.getElementById("formaPago").value;
+.badge-marca {
+  background-color: #ffffff;
+  color: #0f294a;
+  font-weight: 800;
+  padding: 8px 12px;
+  border-radius: 8px;
+  letter-spacing: 1px;
+}
 
-  if (!cant || cant <= 0) {
-    mostrarAlerta("Ingresá una cantidad de fardos mayor a cero.", "error");
-    return;
+.topbar h1 {
+  font-size: 1.15rem;
+}
+
+.topbar p {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.rol-box {
+  background-color: rgba(255, 255, 255, 0.14);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.menu-casos {
+  background-color: #ffffff;
+  border-bottom: 1px solid #cbd5e1;
+  padding: 10px 24px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  border: 1px solid #cbd5e1;
+  background-color: #f8fafc;
+  color: #1e293b;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.tab.active {
+  background-color: #1d4ed8;
+  color: #ffffff;
+  border-color: #1d4ed8;
+}
+
+.contenedor {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e2e8f0;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nro-venta {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-info {
+  background-color: #f1f5f9;
+  color: #0f294a;
+  border-color: #cbd5e1;
+}
+
+.badge-ok {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+.badge-alerta {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: #1e293b;
+}
+
+input, select {
+  padding: 10px 12px;
+  border: 1px solid #94a3b8;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.resumen-stock {
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.alerta {
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.alerta-error {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.alerta-ok {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+button {
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primario {
+  background-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.btn-primario:hover {
+  background-color: #1e40af;
+}
+
+.btn-exito {
+  background-color: #15803d;
+  color: #ffffff;
+}
+
+.btn-exito:hover {
+  background-color: #166534;
+}
+
+.btn-peligro {
+  background-color: #dc2626;
+  color: #ffffff;
+}
+
+.btn-peligro:hover {
+  background-color: #b91c1c;
+}
+
+.btn-secundario {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
+.comprobante {
+  margin-top: 22px;
+  border: 2px dashed #1d4ed8;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  padding: 18px;
+  line-height: 1.6;
+}
+
+.comprobante-ok {
+  border-color: #15803d;
+}
+
+.comprobante-merma {
+  border-color: #dc2626;
+}
+
+.kpis-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.kpi-card {
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kpi-card span {
+  font-size: 0.85rem;
+  color: #475569;
+  font-weight: 600;
+}
+
+.kpi-card strong {
+  font-size: 1.45rem;
+  color: #0f172a;
+}
+
+.historial-box {
+  margin-top: 22px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.historial-box h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.lista-mov {
+  padding-left: 18px;
+  line-height: 1.7;
+  color: #334155;
+}
+
+.oculto {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .kpis-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
+}
 
-  if (cant > stockFardos) {
-    mostrarAlerta(
-      `Stock insuficiente: solicitaste ${cant} fardos y solo hay ${stockFardos} disponibles en depósito.`,
-      "error"
-    );
-    return;
+@media (max-width: 640px) {
+  .form-grid, .resumen-stock, .kpis-grid {
+    grid-template-columns: 1fr;
   }
-
-  stockFardos -= cant;
-  spanStock.textContent = stockFardos;
-
-  const nroComprobante = `V-${String(correlativoVenta).padStart(5, "0")}`;
-  correlativoVenta++;
-  nroVentaDisplay.textContent = `N° Venta: V-${String(correlativoVenta).padStart(5, "0")}`;
-
-  const totalVenta = cant * precioUnitario;
-  ocultarAlerta();
-  mostrarAlerta("Venta registrada con éxito y stock actualizado.", "ok");
-
-  comprobanteBox.className = "comprobante";
-  comprobanteBox.innerHTML = `
-    <h3>Comprobante de Venta (${nroComprobante})</h3>
-    <p><strong>Fecha:</strong> ${fecha} | <strong>Forma de pago:</strong> ${formaPago}</p>
-    <p><strong>Cliente:</strong> ${clienteNombre} (${tipoCliente})</p>
-    <p><strong>Detalle:</strong> ${cant} fardos de 10 kg — Total: <strong>$${totalVenta.toLocaleString("es-AR")}</strong></p>
-    <p><strong>Stock restante en depósito:</strong> ${stockFardos} fardos</p>
-  `;
-
-  inputCantidad.value = "";
-  actualizarTotalEstimado();
-});
-
-btnLimpiar.addEventListener("click", () => {
-  formVenta.reset();
-  document.getElementById("fechaVenta").value = "2026-11-25";
-  ocultarAlerta();
-  comprobanteBox.className = "comprobante oculto";
-  actualizarTotalEstimado();
-});
-
-document.querySelectorAll(".tab").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-
-    const caso = btn.dataset.caso;
-    document.getElementById("vista-cu5").classList.toggle("oculto", caso !== "cu5");
-    document.getElementById("vista-prox").classList.toggle("oculto", caso === "cu5");
-  });
-});
-
-actualizarTotalEstimado();
+}
