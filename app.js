@@ -360,22 +360,33 @@ function actualizarReporteEstrategico() {
 
 document.getElementById("btnActualizarReporte").addEventListener("click", actualizarReporteEstrategico);
 
-document.querySelectorAll(".tab").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
+const selectAccion = document.getElementById("selectAccion");
 
-    const caso = btn.dataset.caso;
-    const secciones = ["venta", "recepcion", "deposito", "fraccionamiento", "merma", "reporte"];
-    secciones.forEach((sec) => {
-      document.getElementById(`vista-${sec}`).classList.toggle("oculto", caso !== sec);
-    });
-
-    if (caso === "reporte") {
-      actualizarReporteEstrategico();
-    }
+function cambiarVista(caso) {
+  document.querySelectorAll(".tab").forEach((b) => {
+    b.classList.toggle("active", b.dataset.caso === caso);
   });
+  if (selectAccion) {
+    selectAccion.value = caso;
+  }
+
+  const secciones = ["venta", "recepcion", "deposito", "fraccionamiento", "merma", "reporte"];
+  secciones.forEach((sec) => {
+    document.getElementById(`vista-${sec}`).classList.toggle("oculto", caso !== sec);
+  });
+
+  if (caso === "reporte") {
+    actualizarReporteEstrategico();
+  }
+}
+
+document.querySelectorAll(".tab").forEach((btn) => {
+  btn.addEventListener("click", () => cambiarVista(btn.dataset.caso));
 });
+
+if (selectAccion) {
+  selectAccion.addEventListener("change", () => cambiarVista(selectAccion.value));
+}
 
 sincronizarEstados();
 actualizarTotalEstimado();
