@@ -21,32 +21,23 @@
     </div>
   </header>
 
-  <nav class="menu-casos">
+  <nav class="menu-casos" aria-label="Operaciones del sistema">
     <button class="tab active" type="button" data-caso="venta">Registrar Venta (10 kg)</button>
     <button class="tab" type="button" data-caso="recepcion">Recepción de Materia Prima</button>
     <button class="tab" type="button" data-caso="deposito">Asignar Depósito</button>
     <button class="tab" type="button" data-caso="fraccionamiento">Fraccionamiento</button>
     <button class="tab" type="button" data-caso="merma">Bajas / Mermas (PIN)</button>
     <button class="tab" type="button" data-caso="reporte">Reporte Estratégico</button>
-
-    <div class="selector-movil">
-      <label for="selectAccion" class="sr-only">Elegir operación</label>
-      <select id="selectAccion">
-        <option value="venta">Registrar Venta (10 kg)</option>
-        <option value="recepcion">Recepción de Materia Prima</option>
-        <option value="deposito">Asignar Depósito</option>
-        <option value="fraccionamiento">Fraccionamiento</option>
-        <option value="merma">Bajas / Mermas (PIN)</option>
-        <option value="reporte">Reporte Estratégico</option>
-      </select>
-    </div>
   </nav>
 
   <main class="contenedor">
     <!-- REGISTRAR VENTA -->
     <section id="vista-venta" class="card">
       <div class="card-header">
-        <h2>Registrar Venta de Fardos de 10 kg</h2>
+        <div>
+          <span class="etiqueta-seccion">Comercialización y despacho</span>
+          <h2>Registrar Venta de Fardos de 10 kg</h2>
+        </div>
         <span class="nro-venta" id="nroVentaDisplay">N° Venta: V-00128</span>
       </div>
 
@@ -89,18 +80,32 @@
         <div id="mensajeVenta" class="alerta full-width oculto"></div>
 
         <div class="acciones full-width">
+          <button type="button" id="btnToggleVentas" class="btn-secundario">Ver ventas registradas (0)</button>
           <button type="button" id="btnLimpiarVenta" class="btn-secundario">Cancelar / Limpiar</button>
           <button type="submit" class="btn-primario">Confirmar y Registrar</button>
         </div>
       </form>
 
-      <div id="comprobanteVentaBox" class="comprobante oculto"></div>
+      <div id="comprobanteVentaBox" class="comprobante-hoja oculto"></div>
+
+      <div id="listaVentasBox" class="panel-desplegable oculto">
+        <div class="panel-desplegable-header">
+          <h3>Ventas registradas en esta sesión</h3>
+          <button type="button" id="btnCerrarVentas" class="btn-mini">Ocultar</button>
+        </div>
+        <div id="contenidoListaVentas" class="lista-ventas-items">
+          <p class="texto-vacio">Todavía no registraste ventas en esta sesión.</p>
+        </div>
+      </div>
     </section>
 
     <!-- RECEPCIÓN DE MATERIA PRIMA -->
     <section id="vista-recepcion" class="card oculto">
       <div class="card-header">
-        <h2>Recepción de Materia Prima</h2>
+        <div>
+          <span class="etiqueta-seccion">Abastecimiento</span>
+          <h2>Recepción de Materia Prima</h2>
+        </div>
         <span class="nro-venta badge-info" id="nroRecepcionDisplay">Ingreso: R-00042</span>
       </div>
 
@@ -142,13 +147,16 @@
         </div>
       </form>
 
-      <div id="comprobanteRecepcionBox" class="comprobante oculto"></div>
+      <div id="comprobanteRecepcionBox" class="comprobante-hoja oculto"></div>
     </section>
 
     <!-- ASIGNAR DEPÓSITO -->
     <section id="vista-deposito" class="card oculto">
       <div class="card-header">
-        <h2>Asignar Depósito</h2>
+        <div>
+          <span class="etiqueta-seccion">Almacenamiento y sectores</span>
+          <h2>Asignar Depósito</h2>
+        </div>
         <span class="nro-venta badge-info" id="nroDepositoDisplay">Asignación: D-00019</span>
       </div>
 
@@ -190,13 +198,16 @@
         </div>
       </form>
 
-      <div id="comprobanteDepositoBox" class="comprobante oculto"></div>
+      <div id="comprobanteDepositoBox" class="comprobante-hoja oculto"></div>
     </section>
 
     <!-- FRACCIONAMIENTO -->
     <section id="vista-fraccionamiento" class="card oculto">
       <div class="card-header">
-        <h2>Fraccionamiento</h2>
+        <div>
+          <span class="etiqueta-seccion">Producción y envasado</span>
+          <h2>Fraccionamiento</h2>
+        </div>
         <span class="nro-venta badge-ok" id="nroFraccDisplay">Orden: F-00031</span>
       </div>
 
@@ -239,13 +250,16 @@
         </div>
       </form>
 
-      <div id="comprobanteFraccBox" class="comprobante comprobante-ok oculto"></div>
+      <div id="comprobanteFraccBox" class="comprobante-hoja comprobante-ok oculto"></div>
     </section>
 
     <!-- BAJAS / MERMAS (PIN SUPERVISOR) -->
     <section id="vista-merma" class="card oculto">
       <div class="card-header">
-        <h2>Bajas / Mermas (PIN Supervisor)</h2>
+        <div>
+          <span class="etiqueta-seccion">Control de pérdidas</span>
+          <h2>Bajas / Mermas (PIN Supervisor)</h2>
+        </div>
         <span class="nro-venta badge-alerta" id="nroMermaDisplay">N° Baja: M-00014</span>
       </div>
 
@@ -293,13 +307,16 @@
         </div>
       </form>
 
-      <div id="comprobanteMermaBox" class="comprobante comprobante-merma oculto"></div>
+      <div id="comprobanteMermaBox" class="comprobante-hoja comprobante-merma oculto"></div>
     </section>
 
     <!-- REPORTE ESTRATÉGICO -->
     <section id="vista-reporte" class="card oculto">
       <div class="card-header">
-        <h2>Reporte Estratégico</h2>
+        <div>
+          <span class="etiqueta-seccion">Indicadores y seguimiento</span>
+          <h2>Reporte Estratégico</h2>
+        </div>
         <button type="button" id="btnActualizarReporte" class="btn-primario">Actualizar Métricas</button>
       </div>
 
