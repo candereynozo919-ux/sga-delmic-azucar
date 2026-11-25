@@ -1,312 +1,389 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: "Segoe UI", Arial, sans-serif;
+// Estado central del prototipo SGA Delmic Azúcar
+let stockFardos = 250;
+let materiaPrimaKg = 3000;
+const precioUnitario = 18500;
+const kgPorFardo = 10;
+const PIN_SUPERVISOR_VALIDO = "1234";
+
+let correlativoVenta = 128;
+let correlativoRecepcion = 42;
+let correlativoDeposito = 19;
+let correlativoFracc = 31;
+let correlativoMerma = 14;
+
+let totalFardosVendidos = 0;
+let totalFardosFraccionados = 0;
+let totalFardosMerma = 0;
+let facturacionAcumulada = 0;
+const movimientos = [];
+
+function registrarMovimiento(texto) {
+  movimientos.unshift(texto);
+  renderizarMovimientos();
 }
 
-body {
-  background-color: #f1f5f9;
-  color: #0f172a;
+function renderizarMovimientos() {
+  const ul = document.getElementById("listaMovimientos");
+  if (!movimientos.length) {
+    ul.innerHTML = "<li>Sin movimientos registrados aún en esta sesión.</li>";
+    return;
+  }
+  ul.innerHTML = movimientos.slice(0, 12).map((m) => `<li>${m}</li>`).join("");
 }
 
-.topbar {
-  background: linear-gradient(90deg, #0f294a, #1d4ed8);
-  color: #ffffff;
-  padding: 16px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+function sincronizarEstados() {
+  document.getElementById("stockDisponible").textContent = stockFardos;
+  document.getElementById("stockDepositoDisplay").textContent = stockFardos;
+  document.getElementById("stockFraccDisplay").textContent = stockFardos;
+  document.getElementById("stockDisponibleMerma").textContent = stockFardos;
+
+  document.getElementById("mpDisponibleDisplay").textContent = materiaPrimaKg;
+  document.getElementById("mpEquivFardos").textContent = Math.floor(materiaPrimaKg / kgPorFardo);
+  document.getElementById("mpFraccDisplay").textContent = materiaPrimaKg;
+
+  actualizarKgRequeridosFracc();
+  actualizarReporteEstrategico();
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+function mostrarAlerta(idElemento, texto, tipo) {
+  const el = document.getElementById(idElemento);
+  el.textContent = texto;
+  el.className = `alerta full-width ${tipo === "error" ? "alerta-error" : "alerta-ok"}`;
 }
 
-.badge-marca {
-  background-color: #ffffff;
-  color: #0f294a;
-  font-weight: 800;
-  padding: 8px 12px;
-  border-radius: 8px;
-  letter-spacing: 1px;
+function ocultarAlerta(idElemento) {
+  const el = document.getElementById(idElemento);
+  el.className = "alerta full-width oculto";
+  el.textContent = "";
 }
 
-.topbar h1 {
-  font-size: 1.15rem;
+// 1. REGISTRAR VENTA
+const inputCantidadVenta = document.getElementById("cantidadFardos");
+function actualizarTotalEstimado() {
+  const cant = Number(inputCantidadVenta.value) || 0;
+  document.getElementById("totalEstimado").textContent = (cant * precioUnitario).toLocaleString("es-AR");
 }
 
-.topbar p {
-  font-size: 0.85rem;
-  opacity: 0.9;
+inputCantidadVenta.addEventListener("input", () => {
+  ocultarAlerta("mensajeVenta");
+  actualizarTotalEstimado();
+});
+
+document.getElementById("formVenta").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const cant = Number(inputCantidadVenta.value);
+  const [clienteNombre, tipoCliente] = document.getElementById("cliente").value.split("|");
+  const fecha = document.getElementById("fechaVenta").value;
+  const formaPago = document.getElementById("formaPago").value;
+
+  if (!cant || cant <= 0) {
+    mostrarAlerta("mensajeVenta", "Ingresá una cantidad de fardos mayor a cero.", "error");
+    return;
+  }
+
+  if (cant > stockFardos) {
+    mostrarAlerta(
+      "mensajeVenta",
+      `Stock insuficiente: solicitaste ${cant} fardos y solo hay ${stockFardos} disponibles.`,
+      "error"
+    );
+    return;
+  }
+
+  stockFardos -= cant;
+  totalFardosVendidos += cant;
+  const totalVenta = cant * precioUnitario;
+  facturacionAcumulada += totalVenta;
+
+  const nroComprobante = `V-${String(correlativoVenta).padStart(5, "0")}`;
+  correlativoVenta++;
+  document.getElementById("nroVentaDisplay").textContent = `N° Venta: V-${String(correlativoVenta).padStart(5, "0")}`;
+
+  sincronizarEstados();
+  ocultarAlerta("mensajeVenta");
+  mostrarAlerta("mensajeVenta", "Venta registrada con éxito y stock actualizado.", "ok");
+
+  const box = document.getElementById("comprobanteVentaBox");
+  box.className = "comprobante";
+  box.innerHTML = `
+    <h3>Comprobante de Venta (${nroComprobante})</h3>
+    <p><strong>Fecha:</strong> ${fecha} | <strong>Forma de pago:</strong> ${formaPago}</p>
+    <p><strong>Cliente:</strong> ${clienteNombre} (${tipoCliente})</p>
+    <p><strong>Detalle:</strong> ${cant} fardos de 10 kg — Total: <strong>$${totalVenta.toLocaleString("es-AR")}</strong></p>
+    <p><strong>Stock restante:</strong> ${stockFardos} fardos</p>
+  `;
+
+  registrarMovimiento(`[${fecha}] Venta ${nroComprobante}: -${cant} fardos a ${clienteNombre} ($${totalVenta.toLocaleString("es-AR")}).`);
+  inputCantidadVenta.value = "";
+  actualizarTotalEstimado();
+});
+
+document.getElementById("btnLimpiarVenta").addEventListener("click", () => {
+  document.getElementById("formVenta").reset();
+  document.getElementById("fechaVenta").value = "2026-11-25";
+  ocultarAlerta("mensajeVenta");
+  document.getElementById("comprobanteVentaBox").className = "comprobante oculto";
+  actualizarTotalEstimado();
+});
+
+// 2. RECEPCIÓN DE MATERIA PRIMA
+document.getElementById("formRecepcion").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const kilos = Number(document.getElementById("kilosRecepcion").value);
+  const proveedor = document.getElementById("proveedorMP").value;
+  const fecha = document.getElementById("fechaRecepcion").value;
+  const lote = document.getElementById("loteRecepcion").value.trim() || "Sin remito";
+
+  if (!kilos || kilos <= 0) {
+    mostrarAlerta("mensajeRecepcion", "Ingresá una cantidad en kg mayor a cero.", "error");
+    return;
+  }
+
+  materiaPrimaKg += kilos;
+  const nroIngreso = `R-${String(correlativoRecepcion).padStart(5, "0")}`;
+  correlativoRecepcion++;
+  document.getElementById("nroRecepcionDisplay").textContent = `Ingreso: R-${String(correlativoRecepcion).padStart(5, "0")}`;
+
+  sincronizarEstados();
+  mostrarAlerta("mensajeRecepcion", "Recepción de materia prima registrada.", "ok");
+
+  const box = document.getElementById("comprobanteRecepcionBox");
+  box.className = "comprobante";
+  box.innerHTML = `
+    <h3>Constancia de Recepción (${nroIngreso})</h3>
+    <p><strong>Fecha:</strong> ${fecha} | <strong>Proveedor:</strong> ${proveedor}</p>
+    <p><strong>Lote / Remito:</strong> ${lote} | <strong>Ingresó:</strong> +${kilos} kg</p>
+    <p><strong>Materia prima disponible:</strong> ${materiaPrimaKg} kg</p>
+  `;
+
+  registrarMovimiento(`[${fecha}] Recepción ${nroIngreso}: +${kilos} kg de ${proveedor} (${lote}).`);
+  document.getElementById("formRecepcion").reset();
+  document.getElementById("fechaRecepcion").value = "2026-11-25";
+});
+
+document.getElementById("btnLimpiarRecepcion").addEventListener("click", () => {
+  document.getElementById("formRecepcion").reset();
+  document.getElementById("fechaRecepcion").value = "2026-11-25";
+  ocultarAlerta("mensajeRecepcion");
+  document.getElementById("comprobanteRecepcionBox").className = "comprobante oculto";
+});
+
+// 3. ASIGNAR DEPÓSITO
+document.getElementById("formDeposito").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const cant = Number(document.getElementById("cantidadDeposito").value);
+  const [nombreDep, capMax] = document.getElementById("depositoDestino").value.split("|");
+  const fecha = document.getElementById("fechaDeposito").value;
+  const ubicacion = document.getElementById("ubicacionPasillo").value.trim() || "General";
+
+  if (!cant || cant <= 0) {
+    mostrarAlerta("mensajeDeposito", "Ingresá una cantidad de fardos mayor a cero.", "error");
+    return;
+  }
+
+  if (cant > stockFardos) {
+    mostrarAlerta("mensajeDeposito", `No podés asignar ${cant} fardos: el stock disponible es de ${stockFardos}.`, "error");
+    return;
+  }
+
+  if (cant > Number(capMax)) {
+    mostrarAlerta("mensajeDeposito", `La cantidad supera la capacidad máxima de ${nombreDep} (${capMax} fardos).`, "error");
+    return;
+  }
+
+  const nroAsig = `D-${String(correlativoDeposito).padStart(5, "0")}`;
+  correlativoDeposito++;
+  document.getElementById("nroDepositoDisplay").textContent = `Asignación: D-${String(correlativoDeposito).padStart(5, "0")}`;
+  document.getElementById("estadoCapacidadDep").textContent = `Asignado a ${nombreDep}`;
+
+  mostrarAlerta("mensajeDeposito", "Asignación de depósito confirmada.", "ok");
+
+  const box = document.getElementById("comprobanteDepositoBox");
+  box.className = "comprobante";
+  box.innerHTML = `
+    <h3>Asignación de Depósito (${nroAsig})</h3>
+    <p><strong>Fecha:</strong> ${fecha} | <strong>Depósito:</strong> ${nombreDep}</p>
+    <p><strong>Ubicación:</strong> ${ubicacion} | <strong>Fardos asignados:</strong> ${cant}</p>
+  `;
+
+  registrarMovimiento(`[${fecha}] Depósito ${nroAsig}: ${cant} fardos asignados a ${nombreDep} (${ubicacion}).`);
+  document.getElementById("formDeposito").reset();
+  document.getElementById("fechaDeposito").value = "2026-11-25";
+});
+
+document.getElementById("btnLimpiarDeposito").addEventListener("click", () => {
+  document.getElementById("formDeposito").reset();
+  document.getElementById("fechaDeposito").value = "2026-11-25";
+  ocultarAlerta("mensajeDeposito");
+  document.getElementById("comprobanteDepositoBox").className = "comprobante oculto";
+});
+
+// 4. FRACCIONAMIENTO
+const inputFardosFracc = document.getElementById("fardosAFraccionar");
+function actualizarKgRequeridosFracc() {
+  const fardos = Number(inputFardosFracc.value) || 0;
+  document.getElementById("kgRequeridosFracc").textContent = fardos * kgPorFardo;
 }
 
-.rol-box {
-  background-color: rgba(255, 255, 255, 0.14);
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-}
+inputFardosFracc.addEventListener("input", () => {
+  ocultarAlerta("mensajeFracc");
+  actualizarKgRequeridosFracc();
+});
 
-.menu-casos {
-  background-color: #ffffff;
-  border-bottom: 1px solid #cbd5e1;
-  padding: 10px 24px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+document.getElementById("formFraccionamiento").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const fardos = Number(inputFardosFracc.value);
+  const kgNecesarios = fardos * kgPorFardo;
+  const fecha = document.getElementById("fechaFracc").value;
+  const linea = document.getElementById("lineaFracc").value;
+  const lote = document.getElementById("loteFracc").value.trim() || "Sin lote";
 
-.tab {
-  border: 1px solid #cbd5e1;
-  background-color: #f8fafc;
-  color: #1e293b;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
+  if (!fardos || fardos <= 0) {
+    mostrarAlerta("mensajeFracc", "Ingresá una cantidad de fardos a fraccionar mayor a cero.", "error");
+    return;
+  }
 
-.tab.active {
-  background-color: #1d4ed8;
-  color: #ffffff;
-  border-color: #1d4ed8;
-}
+  if (kgNecesarios > materiaPrimaKg) {
+    mostrarAlerta(
+      "mensajeFracc",
+      `Materia prima insuficiente: necesitás ${kgNecesarios} kg y hay ${materiaPrimaKg} kg disponibles.`,
+      "error"
+    );
+    return;
+  }
 
-.contenedor {
-  max-width: 900px;
-  margin: 24px auto;
-  padding: 0 16px;
-}
+  materiaPrimaKg -= kgNecesarios;
+  stockFardos += fardos;
+  totalFardosFraccionados += fardos;
 
-.card {
-  background-color: #ffffff;
-  border-radius: 10px;
-  padding: 24px;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
-  border: 1px solid #e2e8f0;
-}
+  const nroOrden = `F-${String(correlativoFracc).padStart(5, "0")}`;
+  correlativoFracc++;
+  document.getElementById("nroFraccDisplay").textContent = `Orden: F-${String(correlativoFracc).padStart(5, "0")}`;
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 14px;
-  margin-bottom: 20px;
-  gap: 10px;
-  flex-wrap: wrap;
-}
+  sincronizarEstados();
+  mostrarAlerta("mensajeFracc", "Fraccionamiento completado: se sumaron fardos al stock.", "ok");
 
-.nro-venta {
-  background-color: #eff6ff;
-  color: #1d4ed8;
-  font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid #bfdbfe;
-}
+  const box = document.getElementById("comprobanteFraccBox");
+  box.className = "comprobante comprobante-ok";
+  box.innerHTML = `
+    <h3>Orden de Fraccionamiento (${nroOrden})</h3>
+    <p><strong>Fecha:</strong> ${fecha} | <strong>${linea}</strong> | <strong>Lote:</strong> ${lote}</p>
+    <p><strong>Consumido:</strong> -${kgNecesarios} kg de materia prima</p>
+    <p><strong>Producido:</strong> +${fardos} fardos de 10 kg (${fardos * 10} bolsas de 1 kg)</p>
+    <p><strong>Nuevo stock de fardos:</strong> ${stockFardos} fardos</p>
+  `;
 
-.badge-info {
-  background-color: #f1f5f9;
-  color: #0f294a;
-  border-color: #cbd5e1;
-}
+  registrarMovimiento(`[${fecha}] Fraccionamiento ${nroOrden}: +${fardos} fardos (-${kgNecesarios} kg MP) en ${linea}.`);
+  inputFardosFracc.value = "";
+  actualizarKgRequeridosFracc();
+});
 
-.badge-ok {
-  background-color: #f0fdf4;
-  color: #15803d;
-  border-color: #bbf7d0;
-}
+document.getElementById("btnLimpiarFracc").addEventListener("click", () => {
+  document.getElementById("formFraccionamiento").reset();
+  document.getElementById("fechaFracc").value = "2026-11-25";
+  ocultarAlerta("mensajeFracc");
+  document.getElementById("comprobanteFraccBox").className = "comprobante comprobante-ok oculto";
+  actualizarKgRequeridosFracc();
+});
 
-.badge-alerta {
-  background-color: #fef2f2;
-  color: #b91c1c;
-  border-color: #fecaca;
-}
+// 5. BAJAS / MERMAS (PIN SUPERVISOR)
+document.getElementById("formMerma").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const cant = Number(document.getElementById("cantidadMerma").value);
+  const pin = document.getElementById("pinSupervisor").value.trim();
+  const motivo = document.getElementById("motivoMerma").value;
+  const fecha = document.getElementById("fechaMerma").value;
+  const observacion = document.getElementById("observacionMerma").value.trim() || "Sin observaciones";
 
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
+  if (!cant || cant <= 0) {
+    mostrarAlerta("mensajeMerma", "Ingresá una cantidad de fardos mayor a cero para dar de baja.", "error");
+    return;
+  }
 
-.full-width {
-  grid-column: 1 / -1;
-}
+  if (cant > stockFardos) {
+    mostrarAlerta(
+      "mensajeMerma",
+      `No podés dar de baja ${cant} fardos porque el stock disponible es de ${stockFardos} fardos.`,
+      "error"
+    );
+    return;
+  }
 
-.campo {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+  if (pin !== PIN_SUPERVISOR_VALIDO) {
+    mostrarAlerta("mensajeMerma", "PIN de Supervisor incorrecto. Baja no autorizada.", "error");
+    return;
+  }
 
-label {
-  font-weight: 600;
-  font-size: 0.92rem;
-  color: #1e293b;
-}
+  stockFardos -= cant;
+  totalFardosMerma += cant;
 
-input, select {
-  padding: 10px 12px;
-  border: 1px solid #94a3b8;
-  border-radius: 6px;
-  font-size: 0.95rem;
-}
+  const nroBaja = `M-${String(correlativoMerma).padStart(5, "0")}`;
+  correlativoMerma++;
+  document.getElementById("nroMermaDisplay").textContent = `N° Baja: M-${String(correlativoMerma).padStart(5, "0")}`;
 
-.resumen-stock {
-  background-color: #f8fafc;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 14px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
+  sincronizarEstados();
+  mostrarAlerta("mensajeMerma", "Baja / Merma autorizada por supervisor y descontada del stock.", "ok");
 
-.alerta {
-  padding: 12px 14px;
-  border-radius: 6px;
-  font-weight: 600;
-}
+  const box = document.getElementById("comprobanteMermaBox");
+  box.className = "comprobante comprobante-merma";
+  box.innerHTML = `
+    <h3>Constancia de Baja / Merma (${nroBaja})</h3>
+    <p><strong>Fecha:</strong> ${fecha} | <strong>Autorización:</strong> Supervisor (PIN verificado)</p>
+    <p><strong>Motivo:</strong> ${motivo}</p>
+    <p><strong>Cantidad dada de baja:</strong> ${cant} fardos de 10 kg</p>
+    <p><strong>Observación:</strong> ${observacion}</p>
+    <p><strong>Stock restante en depósito:</strong> ${stockFardos} fardos</p>
+  `;
 
-.alerta-error {
-  background-color: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
+  registrarMovimiento(`[${fecha}] Baja ${nroBaja}: -${cant} fardos por ${motivo} (PIN OK).`);
+  document.getElementById("formMerma").reset();
+  document.getElementById("fechaMerma").value = "2026-11-25";
+});
 
-.alerta-ok {
-  background-color: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-}
+document.getElementById("btnLimpiarMerma").addEventListener("click", () => {
+  document.getElementById("formMerma").reset();
+  document.getElementById("fechaMerma").value = "2026-11-25";
+  ocultarAlerta("mensajeMerma");
+  document.getElementById("comprobanteMermaBox").className = "comprobante comprobante-merma oculto";
+});
 
-.acciones {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 6px;
-}
+// 6. REPORTE ESTRATÉGICO
+function actualizarReporteEstrategico() {
+  document.getElementById("kpiStockFardos").textContent = stockFardos;
+  document.getElementById("kpiMPKg").textContent = materiaPrimaKg;
+  document.getElementById("kpiFardosVendidos").textContent = totalFardosVendidos;
+  document.getElementById("kpiFardosFracc").textContent = totalFardosFraccionados;
+  document.getElementById("kpiFardosMerma").textContent = totalFardosMerma;
+  document.getElementById("kpiFacturacion").textContent = `$${facturacionAcumulada.toLocaleString("es-AR")}`;
 
-button {
-  padding: 10px 18px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-}
-
-.btn-primario {
-  background-color: #1d4ed8;
-  color: #ffffff;
-}
-
-.btn-primario:hover {
-  background-color: #1e40af;
-}
-
-.btn-exito {
-  background-color: #15803d;
-  color: #ffffff;
-}
-
-.btn-exito:hover {
-  background-color: #166534;
-}
-
-.btn-peligro {
-  background-color: #dc2626;
-  color: #ffffff;
-}
-
-.btn-peligro:hover {
-  background-color: #b91c1c;
-}
-
-.btn-secundario {
-  background-color: #e2e8f0;
-  color: #1e293b;
-}
-
-.comprobante {
-  margin-top: 22px;
-  border: 2px dashed #1d4ed8;
-  background-color: #f8fafc;
-  border-radius: 8px;
-  padding: 18px;
-  line-height: 1.6;
-}
-
-.comprobante-ok {
-  border-color: #15803d;
-}
-
-.comprobante-merma {
-  border-color: #dc2626;
-}
-
-.kpis-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
-
-.kpi-card {
-  background-color: #f8fafc;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.kpi-card span {
-  font-size: 0.85rem;
-  color: #475569;
-  font-weight: 600;
-}
-
-.kpi-card strong {
-  font-size: 1.45rem;
-  color: #0f172a;
-}
-
-.historial-box {
-  margin-top: 22px;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 16px;
-}
-
-.historial-box h3 {
-  font-size: 1rem;
-  margin-bottom: 10px;
-}
-
-.lista-mov {
-  padding-left: 18px;
-  line-height: 1.7;
-  color: #334155;
-}
-
-.oculto {
-  display: none;
-}
-
-@media (max-width: 720px) {
-  .kpis-grid {
-    grid-template-columns: repeat(2, 1fr);
+  const alertaBajo = document.getElementById("alertaStockBajo");
+  if (stockFardos < 50) {
+    alertaBajo.textContent = `Alerta de stock crítico: quedan solo ${stockFardos} fardos disponibles (umbral sugerido: 50 fardos).`;
+    alertaBajo.className = "alerta alerta-error";
+  } else {
+    alertaBajo.className = "alerta alerta-error oculto";
   }
 }
 
-@media (max-width: 640px) {
-  .form-grid, .resumen-stock, .kpis-grid {
-    grid-template-columns: 1fr;
-  }
-}
+document.getElementById("btnActualizarReporte").addEventListener("click", actualizarReporteEstrategico);
+
+// Navegación entre pestañas
+document.querySelectorAll(".tab").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    const caso = btn.dataset.caso;
+    const secciones = ["venta", "recepcion", "deposito", "fraccionamiento", "merma", "reporte"];
+    secciones.forEach((sec) => {
+      document.getElementById(`vista-${sec}`).classList.toggle("oculto", caso !== sec);
+    });
+
+    if (caso === "reporte") {
+      actualizarReporteEstrategico();
+    }
+  });
+});
+
+sincronizarEstados();
+actualizarTotalEstimado();
