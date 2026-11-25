@@ -57,7 +57,7 @@ body {
   border-bottom: 1px solid #cbd5e1;
   padding: 10px 24px;
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -65,10 +65,11 @@ body {
   border: 1px solid #cbd5e1;
   background-color: #f8fafc;
   color: #1e293b;
-  padding: 8px 14px;
+  padding: 8px 12px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .tab.active {
@@ -78,7 +79,7 @@ body {
 }
 
 .contenedor {
-  max-width: 860px;
+  max-width: 900px;
   margin: 24px auto;
   padding: 0 16px;
 }
@@ -109,6 +110,24 @@ body {
   padding: 6px 12px;
   border-radius: 6px;
   border: 1px solid #bfdbfe;
+}
+
+.badge-info {
+  background-color: #f1f5f9;
+  color: #0f294a;
+  border-color: #cbd5e1;
+}
+
+.badge-ok {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+.badge-alerta {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
 }
 
 .form-grid {
@@ -192,6 +211,24 @@ button {
   background-color: #1e40af;
 }
 
+.btn-exito {
+  background-color: #15803d;
+  color: #ffffff;
+}
+
+.btn-exito:hover {
+  background-color: #166534;
+}
+
+.btn-peligro {
+  background-color: #dc2626;
+  color: #ffffff;
+}
+
+.btn-peligro:hover {
+  background-color: #b91c1c;
+}
+
 .btn-secundario {
   background-color: #e2e8f0;
   color: #1e293b;
@@ -206,12 +243,70 @@ button {
   line-height: 1.6;
 }
 
+.comprobante-ok {
+  border-color: #15803d;
+}
+
+.comprobante-merma {
+  border-color: #dc2626;
+}
+
+.kpis-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.kpi-card {
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kpi-card span {
+  font-size: 0.85rem;
+  color: #475569;
+  font-weight: 600;
+}
+
+.kpi-card strong {
+  font-size: 1.45rem;
+  color: #0f172a;
+}
+
+.historial-box {
+  margin-top: 22px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.historial-box h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.lista-mov {
+  padding-left: 18px;
+  line-height: 1.7;
+  color: #334155;
+}
+
 .oculto {
   display: none;
 }
 
+@media (max-width: 720px) {
+  .kpis-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 640px) {
-  .form-grid, .resumen-stock {
+  .form-grid, .resumen-stock, .kpis-grid {
     grid-template-columns: 1fr;
   }
 }
