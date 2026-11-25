@@ -16,18 +16,23 @@
       </div>
     </div>
     <div class="rol-box">
-      <span>Rol activo:</span>
-      <strong>Personal de Finanzas</strong>
+      <span>Operación:</span>
+      <strong>Delmic Azúcar</strong>
     </div>
   </header>
 
   <nav class="menu-casos">
-    <button class="tab active" type="button" data-caso="cu5">CU 5: Registrar Venta (10 kg)</button>
-    <button class="tab" type="button" data-caso="prox">Próximos Casos de Uso</button>
+    <button class="tab active" type="button" data-caso="venta">Registrar Venta (10 kg)</button>
+    <button class="tab" type="button" data-caso="recepcion">Recepción de Materia Prima</button>
+    <button class="tab" type="button" data-caso="deposito">Asignar Depósito</button>
+    <button class="tab" type="button" data-caso="fraccionamiento">Fraccionamiento</button>
+    <button class="tab" type="button" data-caso="merma">Bajas / Mermas (PIN)</button>
+    <button class="tab" type="button" data-caso="reporte">Reporte Estratégico</button>
   </nav>
 
   <main class="contenedor">
-    <section id="vista-cu5" class="card">
+    <!-- 1. REGISTRAR VENTA -->
+    <section id="vista-venta" class="card">
       <div class="card-header">
         <h2>Registrar Venta de Fardos de 10 kg</h2>
         <span class="nro-venta" id="nroVentaDisplay">N° Venta: V-00128</span>
@@ -69,24 +74,258 @@
           <div><strong>Total estimado:</strong> $<span id="totalEstimado">0</span></div>
         </div>
 
-        <div id="mensajeEstado" class="alerta full-width oculto"></div>
+        <div id="mensajeVenta" class="alerta full-width oculto"></div>
 
         <div class="acciones full-width">
-          <button type="button" id="btnLimpiar" class="btn-secundario">Cancelar / Limpiar</button>
+          <button type="button" id="btnLimpiarVenta" class="btn-secundario">Cancelar / Limpiar</button>
           <button type="submit" class="btn-primario">Confirmar y Registrar</button>
         </div>
       </form>
 
-      <div id="comprobanteBox" class="comprobante oculto"></div>
+      <div id="comprobanteVentaBox" class="comprobante oculto"></div>
     </section>
 
-    <section id="vista-prox" class="card oculto">
-      <h2>Próximos Casos de Uso del SGA Delmic</h2>
-      <p>
-        Espacio reservado para sumar <strong>CU 1</strong> (Recepción de Materia Prima),
-        <strong>CU 2</strong> (Asignar Depósito), <strong>CU 3</strong> (Fraccionamiento),
-        <strong>CU 4</strong> (Bajas / Mermas con PIN de Supervisor) y <strong>CU 6</strong> (Reporte Estratégico).
-      </p>
+    <!-- 2. RECEPCIÓN DE MATERIA PRIMA -->
+    <section id="vista-recepcion" class="card oculto">
+      <div class="card-header">
+        <h2>Recepción de Materia Prima</h2>
+        <span class="nro-venta badge-info" id="nroRecepcionDisplay">Ingreso: R-00042</span>
+      </div>
+
+      <form id="formRecepcion" class="form-grid">
+        <div class="campo">
+          <label for="proveedorMP">Proveedor / Ingenio</label>
+          <select id="proveedorMP">
+            <option value="Ingenio del Sur">Ingenio del Sur</option>
+            <option value="Azucarera del Norte">Azucarera del Norte</option>
+            <option value="Acopio Regional Concepción">Acopio Regional Concepción</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="fechaRecepcion">Fecha de ingreso</label>
+          <input type="date" id="fechaRecepcion" value="2026-11-25" required />
+        </div>
+
+        <div class="campo">
+          <label for="kilosRecepcion">Cantidad recibida (kg de azúcar)</label>
+          <input type="number" id="kilosRecepcion" min="1" placeholder="Ej: 1500" required />
+        </div>
+
+        <div class="campo">
+          <label for="loteRecepcion">N° de lote / remito</label>
+          <input type="text" id="loteRecepcion" placeholder="Ej: REM-8841" />
+        </div>
+
+        <div class="resumen-stock full-width">
+          <div><strong>Materia prima disponible:</strong> <span id="mpDisponibleDisplay">3000</span> kg</div>
+          <div><strong>Equivalente en fardos (10 kg):</strong> <span id="mpEquivFardos">300</span> fardos</div>
+        </div>
+
+        <div id="mensajeRecepcion" class="alerta full-width oculto"></div>
+
+        <div class="acciones full-width">
+          <button type="button" id="btnLimpiarRecepcion" class="btn-secundario">Limpiar</button>
+          <button type="submit" class="btn-primario">Registrar Recepción</button>
+        </div>
+      </form>
+
+      <div id="comprobanteRecepcionBox" class="comprobante oculto"></div>
+    </section>
+
+    <!-- 3. ASIGNAR DEPÓSITO -->
+    <section id="vista-deposito" class="card oculto">
+      <div class="card-header">
+        <h2>Asignar Depósito</h2>
+        <span class="nro-venta badge-info" id="nroDepositoDisplay">Asignación: D-00019</span>
+      </div>
+
+      <form id="formDeposito" class="form-grid">
+        <div class="campo">
+          <label for="depositoDestino">Depósito de destino</label>
+          <select id="depositoDestino">
+            <option value="Depósito Principal (Sector A)|1000">Depósito Principal (Sector A) — Cap. 1000 fardos</option>
+            <option value="Depósito Fraccionamiento (Sector B)|500">Depósito Fraccionamiento (Sector B) — Cap. 500 fardos</option>
+            <option value="Depósito Expedición (Sector C)|400">Depósito Expedición (Sector C) — Cap. 400 fardos</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="fechaDeposito">Fecha de asignación</label>
+          <input type="date" id="fechaDeposito" value="2026-11-25" required />
+        </div>
+
+        <div class="campo">
+          <label for="cantidadDeposito">Cantidad a asignar (fardos 10 kg)</label>
+          <input type="number" id="cantidadDeposito" min="1" placeholder="Ej: 100" required />
+        </div>
+
+        <div class="campo">
+          <label for="ubicacionPasillo">Pasillo / Rack / Lote</label>
+          <input type="text" id="ubicacionPasillo" placeholder="Ej: Pasillo 2 · Rack D" />
+        </div>
+
+        <div class="resumen-stock full-width">
+          <div><strong>Stock total en planta:</strong> <span id="stockDepositoDisplay">250</span> fardos</div>
+          <div><strong>Estado del depósito:</strong> <span id="estadoCapacidadDep">Operativo</span></div>
+        </div>
+
+        <div id="mensajeDeposito" class="alerta full-width oculto"></div>
+
+        <div class="acciones full-width">
+          <button type="button" id="btnLimpiarDeposito" class="btn-secundario">Limpiar</button>
+          <button type="submit" class="btn-primario">Confirmar Asignación</button>
+        </div>
+      </form>
+
+      <div id="comprobanteDepositoBox" class="comprobante oculto"></div>
+    </section>
+
+    <!-- 4. FRACCIONAMIENTO -->
+    <section id="vista-fraccionamiento" class="card oculto">
+      <div class="card-header">
+        <h2>Fraccionamiento</h2>
+        <span class="nro-venta badge-ok" id="nroFraccDisplay">Orden: F-00031</span>
+      </div>
+
+      <form id="formFraccionamiento" class="form-grid">
+        <div class="campo">
+          <label for="fardosAFraccionar">Fardos de 10 kg a producir</label>
+          <input type="number" id="fardosAFraccionar" min="1" placeholder="Ej: 40" required />
+        </div>
+
+        <div class="campo">
+          <label for="fechaFracc">Fecha de fraccionamiento</label>
+          <input type="date" id="fechaFracc" value="2026-11-25" required />
+        </div>
+
+        <div class="campo">
+          <label for="lineaFracc">Línea / Turno</label>
+          <select id="lineaFracc">
+            <option value="Línea 1 · Turno Mañana">Línea 1 · Turno Mañana</option>
+            <option value="Línea 2 · Turno Tarde">Línea 2 · Turno Tarde</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="loteFracc">Código de partida / lote</label>
+          <input type="text" id="loteFracc" placeholder="Ej: PART-2026-11" />
+        </div>
+
+        <div class="resumen-stock full-width">
+          <div><strong>Materia prima requerida:</strong> <span id="kgRequeridosFracc">0</span> kg (10 kg por fardo)</div>
+          <div><strong>Materia prima disponible:</strong> <span id="mpFraccDisplay">3000</span> kg</div>
+          <div><strong>Stock actual de fardos:</strong> <span id="stockFraccDisplay">250</span> fardos</div>
+          <div><strong>Presentación:</strong> Fardo 10 kg = 10 bolsas de 1 kg</div>
+        </div>
+
+        <div id="mensajeFracc" class="alerta full-width oculto"></div>
+
+        <div class="acciones full-width">
+          <button type="button" id="btnLimpiarFracc" class="btn-secundario">Limpiar</button>
+          <button type="submit" class="btn-exito">Ejecutar Fraccionamiento</button>
+        </div>
+      </form>
+
+      <div id="comprobanteFraccBox" class="comprobante comprobante-ok oculto"></div>
+    </section>
+
+    <!-- 5. BAJAS / MERMAS (PIN SUPERVISOR) -->
+    <section id="vista-merma" class="card oculto">
+      <div class="card-header">
+        <h2>Bajas / Mermas (PIN Supervisor)</h2>
+        <span class="nro-venta badge-alerta" id="nroMermaDisplay">N° Baja: M-00014</span>
+      </div>
+
+      <form id="formMerma" class="form-grid">
+        <div class="campo">
+          <label for="motivoMerma">Motivo de baja</label>
+          <select id="motivoMerma">
+            <option value="Rotura de envase / fardo">Rotura de envase / fardo</option>
+            <option value="Humedad en depósito">Humedad en depósito</option>
+            <option value="Merma en fraccionamiento">Merma en fraccionamiento</option>
+            <option value="Producto no apto / control calidad">Producto no apto / control calidad</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="fechaMerma">Fecha</label>
+          <input type="date" id="fechaMerma" value="2026-11-25" required />
+        </div>
+
+        <div class="campo">
+          <label for="cantidadMerma">Cantidad a dar de baja (fardos 10 kg)</label>
+          <input type="number" id="cantidadMerma" min="1" placeholder="Ej: 5" required />
+        </div>
+
+        <div class="campo">
+          <label for="pinSupervisor">PIN de Supervisor (Demo: 1234)</label>
+          <input type="password" id="pinSupervisor" maxlength="6" placeholder="Ingresá PIN" required />
+        </div>
+
+        <div class="campo full-width">
+          <label for="observacionMerma">Observación / Lote afectado</label>
+          <input type="text" id="observacionMerma" placeholder="Ej: Lote L-2026-11 · Sector B" />
+        </div>
+
+        <div class="resumen-stock full-width">
+          <div><strong>Producto:</strong> Fardo Delmic de 10 kg</div>
+          <div><strong>Stock actual en depósito:</strong> <span id="stockDisponibleMerma">250</span> fardos</div>
+        </div>
+
+        <div id="mensajeMerma" class="alerta full-width oculto"></div>
+
+        <div class="acciones full-width">
+          <button type="button" id="btnLimpiarMerma" class="btn-secundario">Cancelar / Limpiar</button>
+          <button type="submit" class="btn-peligro">Autorizar y Registrar Baja</button>
+        </div>
+      </form>
+
+      <div id="comprobanteMermaBox" class="comprobante comprobante-merma oculto"></div>
+    </section>
+
+    <!-- 6. REPORTE ESTRATÉGICO -->
+    <section id="vista-reporte" class="card oculto">
+      <div class="card-header">
+        <h2>Reporte Estratégico</h2>
+        <button type="button" id="btnActualizarReporte" class="btn-primario">Actualizar Métricas</button>
+      </div>
+
+      <div class="kpis-grid">
+        <div class="kpi-card">
+          <span>Stock Fardos (10 kg)</span>
+          <strong id="kpiStockFardos">250</strong>
+        </div>
+        <div class="kpi-card">
+          <span>Materia Prima (kg)</span>
+          <strong id="kpiMPKg">3000</strong>
+        </div>
+        <div class="kpi-card">
+          <span>Fardos Vendidos</span>
+          <strong id="kpiFardosVendidos">0</strong>
+        </div>
+        <div class="kpi-card">
+          <span>Fardos Fraccionados</span>
+          <strong id="kpiFardosFracc">0</strong>
+        </div>
+        <div class="kpi-card">
+          <span>Bajas / Mermas (fardos)</span>
+          <strong id="kpiFardosMerma">0</strong>
+        </div>
+        <div class="kpi-card">
+          <span>Facturación Acumulada</span>
+          <strong id="kpiFacturacion">$0</strong>
+        </div>
+      </div>
+
+      <div id="alertaStockBajo" class="alerta alerta-error oculto" style="margin-top: 16px;"></div>
+
+      <div class="historial-box">
+        <h3>Últimos movimientos registrados en sesión</h3>
+        <ul id="listaMovimientos" class="lista-mov">
+          <li>Sin movimientos registrados aún en esta sesión.</li>
+        </ul>
+      </div>
     </section>
   </main>
 
