@@ -7,19 +7,27 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<aside class="side">
-  <div class="logo"><b>DELMIC</b><small>Azúcar tipo "A"</small></div>
-  <nav id="menu">
-    <button class="tab on" data-v="venta">🧾<span>Venta</span></button>
-    <button class="tab" data-v="recepcion">🚚<span>Recepción</span></button>
-    <button class="tab" data-v="deposito">🏭<span>Depósitos</span></button>
-    <button class="tab" data-v="fracc">📦<span>Fraccionar</span></button>
-    <button class="tab" data-v="merma">⚠️<span>Mermas</span></button>
-    <button class="tab" data-v="reporte">📊<span>Reporte</span></button>
-  </nav>
-</aside>
+<header class="topbar">
+  <div class="brand">
+    <span class="badge-marca">DELMIC</span>
+    <div>
+      <h1>Sistema de Control de Stock y Ventas</h1>
+      <p>Azúcar Común Tipo "A" · Fraccionamiento y comercialización</p>
+    </div>
+  </div>
+  <div class="rol-box"><span>Operación:</span> <strong>Delmic Azúcar</strong></div>
+</header>
 
-<main>
+<nav class="menu-casos" id="menu">
+  <button class="tab on" type="button" data-v="venta">Registrar Venta (10 kg)</button>
+  <button class="tab" type="button" data-v="recepcion">Recepción de Materia Prima</button>
+  <button class="tab" type="button" data-v="deposito">Asignar Depósito</button>
+  <button class="tab" type="button" data-v="fracc">Fraccionamiento</button>
+  <button class="tab" type="button" data-v="merma">Bajas / Mermas (PIN)</button>
+  <button class="tab" type="button" data-v="reporte">Reporte Estratégico</button>
+</nav>
+
+<main class="contenedor">
 <div class="strip">
   <div><small>Stock fardos</small><b id="sFardos">0</b></div>
   <div><small>Materia prima</small><b id="sMP">0 kg</b></div>
