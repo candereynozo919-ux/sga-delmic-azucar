@@ -15,6 +15,7 @@ let totalFardosFraccionados = 0;
 let totalFardosMerma = 0;
 let facturacionAcumulada = 0;
 const movimientos = [];
+const ventasRegistradas = [];
 
 function registrarMovimiento(texto) {
   movimientos.unshift(texto);
@@ -56,6 +57,39 @@ function ocultarAlerta(idElemento) {
   el.textContent = "";
 }
 
+function ocultarComprobanteVenta() {
+  const box = document.getElementById("comprobanteVentaBox");
+  box.className = "comprobante-hoja oculto";
+  box.innerHTML = "";
+}
+
+function renderizarListaVentas() {
+  const btnToggle = document.getElementById("btnToggleVentas");
+  const cont = document.getElementById("contenidoListaVentas");
+  btnToggle.textContent = `Ver ventas registradas (${ventasRegistradas.length})`;
+
+  if (!ventasRegistradas.length) {
+    cont.innerHTML = `<p class="texto-vacio">Todavía no registraste ventas en esta sesión.</p>`;
+    return;
+  }
+
+  cont.innerHTML = ventasRegistradas
+    .map(
+      (v) => `
+      <div class="item-venta-row">
+        <div>
+          <strong>${v.nro}</strong> · ${v.cliente} (${v.tipoCliente})<br />
+          <span>${v.fecha} · ${v.formaPago} · ${v.cantidad} fardos (10 kg)</span>
+        </div>
+        <div>
+          <strong>$${v.total.toLocaleString("es-AR")}</strong>
+        </div>
+      </div>
+    `
+    )
+    .join("");
+}
+
 const inputCantidadVenta = document.getElementById("cantidadFardos");
 function actualizarTotalEstimado() {
   const cant = Number(inputCantidadVenta.value) || 0;
@@ -64,6 +98,7 @@ function actualizarTotalEstimado() {
 
 inputCantidadVenta.addEventListener("input", () => {
   ocultarAlerta("mensajeVenta");
+  ocultarComprobanteVenta();
   actualizarTotalEstimado();
 });
 
@@ -101,14 +136,31 @@ document.getElementById("formVenta").addEventListener("submit", (e) => {
   ocultarAlerta("mensajeVenta");
   mostrarAlerta("mensajeVenta", "Venta registrada con éxito y stock actualizado.", "ok");
 
+  ventasRegistradas.unshift({
+    nro: nroComprobante,
+    cliente: clienteNombre,
+    tipoCliente,
+    fecha,
+    formaPago,
+    cantidad: cant,
+    total: totalVenta,
+  });
+  renderizarListaVentas();
+
   const box = document.getElementById("comprobanteVentaBox");
-  box.className = "comprobante";
+  box.className = "comprobante-hoja";
   box.innerHTML = `
-    <h3>Comprobante de Venta (${nroComprobante})</h3>
-    <p><strong>Fecha:</strong> ${fecha} | <strong>Forma de pago:</strong> ${formaPago}</p>
+    <div class="hoja-encabezado">
+      <h3>DELMIC AZÚCAR · COMPROBANTE</h3>
+      <span>N° ${nroComprobante} · Fecha ${fecha}</span>
+    </div>
     <p><strong>Cliente:</strong> ${clienteNombre} (${tipoCliente})</p>
-    <p><strong>Detalle:</strong> ${cant} fardos de 10 kg — Total: <strong>$${totalVenta.toLocaleString("es-AR")}</strong></p>
-    <p><strong>Stock restante:</strong> ${stockFardos} fardos</p>
+    <p><strong>Forma de pago:</strong> ${formaPago}</p>
+    <p><strong>Detalle:</strong> ${cant} fardos de 10 kg ($${precioUnitario.toLocaleString("es-AR")} c/u)</p>
+    <p><strong>Total:</strong> <strong>$${totalVenta.toLocaleString("es-AR")}</strong></p>
+    <div class="hoja-pie">
+      Stock restante en depósito: <strong>${stockFardos} fardos</strong>
+    </div>
   `;
 
   registrarMovimiento(`[${fecha}] Venta ${nroComprobante}: -${cant} fardos a ${clienteNombre} ($${totalVenta.toLocaleString("es-AR")}).`);
@@ -120,8 +172,21 @@ document.getElementById("btnLimpiarVenta").addEventListener("click", () => {
   document.getElementById("formVenta").reset();
   document.getElementById("fechaVenta").value = "2026-11-25";
   ocultarAlerta("mensajeVenta");
-  document.getElementById("comprobanteVentaBox").className = "comprobante oculto";
+  ocultarComprobanteVenta();
   actualizarTotalEstimado();
+});
+
+const panelVentas = document.getElementById("listaVentasBox");
+
+document.getElementById("btnToggleVentas").addEventListener("click", () => {
+  panelVentas.classList.toggle("oculto");
+  if (!panelVentas.classList.contains("oculto")) {
+    renderizarListaVentas();
+  }
+});
+
+document.getElementById("btnCerrarVentas").addEventListener("click", () => {
+  panelVentas.classList.add("oculto");
 });
 
 document.getElementById("formRecepcion").addEventListener("submit", (e) => {
@@ -145,12 +210,18 @@ document.getElementById("formRecepcion").addEventListener("submit", (e) => {
   mostrarAlerta("mensajeRecepcion", "Recepción de materia prima registrada.", "ok");
 
   const box = document.getElementById("comprobanteRecepcionBox");
-  box.className = "comprobante";
+  box.className = "comprobante-hoja";
   box.innerHTML = `
-    <h3>Constancia de Recepción (${nroIngreso})</h3>
-    <p><strong>Fecha:</strong> ${fecha} | <strong>Proveedor:</strong> ${proveedor}</p>
-    <p><strong>Lote / Remito:</strong> ${lote} | <strong>Ingresó:</strong> +${kilos} kg</p>
-    <p><strong>Materia prima disponible:</strong> ${materiaPrimaKg} kg</p>
+    <div class="hoja-encabezado">
+      <h3>DELMIC AZÚCAR · RECEPCIÓN MP</h3>
+      <span>N° ${nroIngreso} · Fecha ${fecha}</span>
+    </div>
+    <p><strong>Proveedor:</strong> ${proveedor}</p>
+    <p><strong>Lote / Remito:</strong> ${lote}</p>
+    <p><strong>Cantidad recibida:</strong> +${kilos} kg</p>
+    <div class="hoja-pie">
+      Materia prima disponible: <strong>${materiaPrimaKg} kg</strong>
+    </div>
   `;
 
   registrarMovimiento(`[${fecha}] Recepción ${nroIngreso}: +${kilos} kg de ${proveedor} (${lote}).`);
@@ -162,7 +233,9 @@ document.getElementById("btnLimpiarRecepcion").addEventListener("click", () => {
   document.getElementById("formRecepcion").reset();
   document.getElementById("fechaRecepcion").value = "2026-11-25";
   ocultarAlerta("mensajeRecepcion");
-  document.getElementById("comprobanteRecepcionBox").className = "comprobante oculto";
+  const box = document.getElementById("comprobanteRecepcionBox");
+  box.className = "comprobante-hoja oculto";
+  box.innerHTML = "";
 });
 
 document.getElementById("formDeposito").addEventListener("submit", (e) => {
@@ -195,11 +268,18 @@ document.getElementById("formDeposito").addEventListener("submit", (e) => {
   mostrarAlerta("mensajeDeposito", "Asignación de depósito confirmada.", "ok");
 
   const box = document.getElementById("comprobanteDepositoBox");
-  box.className = "comprobante";
+  box.className = "comprobante-hoja";
   box.innerHTML = `
-    <h3>Asignación de Depósito (${nroAsig})</h3>
-    <p><strong>Fecha:</strong> ${fecha} | <strong>Depósito:</strong> ${nombreDep}</p>
-    <p><strong>Ubicación:</strong> ${ubicacion} | <strong>Fardos asignados:</strong> ${cant}</p>
+    <div class="hoja-encabezado">
+      <h3>DELMIC AZÚCAR · DEPÓSITO</h3>
+      <span>N° ${nroAsig} · Fecha ${fecha}</span>
+    </div>
+    <p><strong>Depósito:</strong> ${nombreDep}</p>
+    <p><strong>Ubicación:</strong> ${ubicacion}</p>
+    <p><strong>Fardos asignados:</strong> ${cant} fardos de 10 kg</p>
+    <div class="hoja-pie">
+      Stock total en planta: <strong>${stockFardos} fardos</strong>
+    </div>
   `;
 
   registrarMovimiento(`[${fecha}] Depósito ${nroAsig}: ${cant} fardos asignados a ${nombreDep} (${ubicacion}).`);
@@ -211,7 +291,9 @@ document.getElementById("btnLimpiarDeposito").addEventListener("click", () => {
   document.getElementById("formDeposito").reset();
   document.getElementById("fechaDeposito").value = "2026-11-25";
   ocultarAlerta("mensajeDeposito");
-  document.getElementById("comprobanteDepositoBox").className = "comprobante oculto";
+  const box = document.getElementById("comprobanteDepositoBox");
+  box.className = "comprobante-hoja oculto";
+  box.innerHTML = "";
 });
 
 const inputFardosFracc = document.getElementById("fardosAFraccionar");
@@ -259,13 +341,18 @@ document.getElementById("formFraccionamiento").addEventListener("submit", (e) =>
   mostrarAlerta("mensajeFracc", "Fraccionamiento completado: se sumaron fardos al stock.", "ok");
 
   const box = document.getElementById("comprobanteFraccBox");
-  box.className = "comprobante comprobante-ok";
+  box.className = "comprobante-hoja comprobante-ok";
   box.innerHTML = `
-    <h3>Orden de Fraccionamiento (${nroOrden})</h3>
-    <p><strong>Fecha:</strong> ${fecha} | <strong>${linea}</strong> | <strong>Lote:</strong> ${lote}</p>
+    <div class="hoja-encabezado">
+      <h3>DELMIC AZÚCAR · FRACCIONAMIENTO</h3>
+      <span>Orden ${nroOrden} · Fecha ${fecha}</span>
+    </div>
+    <p><strong>${linea}</strong> | <strong>Lote:</strong> ${lote}</p>
     <p><strong>Consumido:</strong> -${kgNecesarios} kg de materia prima</p>
     <p><strong>Producido:</strong> +${fardos} fardos de 10 kg (${fardos * 10} bolsas de 1 kg)</p>
-    <p><strong>Nuevo stock de fardos:</strong> ${stockFardos} fardos</p>
+    <div class="hoja-pie">
+      Nuevo stock de fardos: <strong>${stockFardos} fardos</strong>
+    </div>
   `;
 
   registrarMovimiento(`[${fecha}] Fraccionamiento ${nroOrden}: +${fardos} fardos (-${kgNecesarios} kg MP) en ${linea}.`);
@@ -277,7 +364,9 @@ document.getElementById("btnLimpiarFracc").addEventListener("click", () => {
   document.getElementById("formFraccionamiento").reset();
   document.getElementById("fechaFracc").value = "2026-11-25";
   ocultarAlerta("mensajeFracc");
-  document.getElementById("comprobanteFraccBox").className = "comprobante comprobante-ok oculto";
+  const box = document.getElementById("comprobanteFraccBox");
+  box.className = "comprobante-hoja comprobante-ok oculto";
+  box.innerHTML = "";
   actualizarKgRequeridosFracc();
 });
 
@@ -319,14 +408,18 @@ document.getElementById("formMerma").addEventListener("submit", (e) => {
   mostrarAlerta("mensajeMerma", "Baja / Merma autorizada por supervisor y descontada del stock.", "ok");
 
   const box = document.getElementById("comprobanteMermaBox");
-  box.className = "comprobante comprobante-merma";
+  box.className = "comprobante-hoja comprobante-merma";
   box.innerHTML = `
-    <h3>Constancia de Baja / Merma (${nroBaja})</h3>
-    <p><strong>Fecha:</strong> ${fecha} | <strong>Autorización:</strong> Supervisor (PIN verificado)</p>
+    <div class="hoja-encabezado">
+      <h3>DELMIC AZÚCAR · BAJA / MERMA</h3>
+      <span>N° ${nroBaja} · Fecha ${fecha}</span>
+    </div>
     <p><strong>Motivo:</strong> ${motivo}</p>
     <p><strong>Cantidad dada de baja:</strong> ${cant} fardos de 10 kg</p>
     <p><strong>Observación:</strong> ${observacion}</p>
-    <p><strong>Stock restante en depósito:</strong> ${stockFardos} fardos</p>
+    <div class="hoja-pie">
+      Stock restante en depósito: <strong>${stockFardos} fardos</strong>
+    </div>
   `;
 
   registrarMovimiento(`[${fecha}] Baja ${nroBaja}: -${cant} fardos por ${motivo} (PIN OK).`);
@@ -338,7 +431,9 @@ document.getElementById("btnLimpiarMerma").addEventListener("click", () => {
   document.getElementById("formMerma").reset();
   document.getElementById("fechaMerma").value = "2026-11-25";
   ocultarAlerta("mensajeMerma");
-  document.getElementById("comprobanteMermaBox").className = "comprobante comprobante-merma oculto";
+  const box = document.getElementById("comprobanteMermaBox");
+  box.className = "comprobante-hoja comprobante-merma oculto";
+  box.innerHTML = "";
 });
 
 function actualizarReporteEstrategico() {
@@ -360,15 +455,10 @@ function actualizarReporteEstrategico() {
 
 document.getElementById("btnActualizarReporte").addEventListener("click", actualizarReporteEstrategico);
 
-const selectAccion = document.getElementById("selectAccion");
-
 function cambiarVista(caso) {
   document.querySelectorAll(".tab").forEach((b) => {
     b.classList.toggle("active", b.dataset.caso === caso);
   });
-  if (selectAccion) {
-    selectAccion.value = caso;
-  }
 
   const secciones = ["venta", "recepcion", "deposito", "fraccionamiento", "merma", "reporte"];
   secciones.forEach((sec) => {
@@ -383,10 +473,6 @@ function cambiarVista(caso) {
 document.querySelectorAll(".tab").forEach((btn) => {
   btn.addEventListener("click", () => cambiarVista(btn.dataset.caso));
 });
-
-if (selectAccion) {
-  selectAccion.addEventListener("change", () => cambiarVista(selectAccion.value));
-}
 
 sincronizarEstados();
 actualizarTotalEstimado();
