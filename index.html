@@ -28,10 +28,22 @@
     <button class="tab" type="button" data-caso="fraccionamiento">Fraccionamiento</button>
     <button class="tab" type="button" data-caso="merma">Bajas / Mermas (PIN)</button>
     <button class="tab" type="button" data-caso="reporte">Reporte Estratégico</button>
+
+    <div class="selector-movil">
+      <label for="selectAccion" class="sr-only">Elegir operación</label>
+      <select id="selectAccion">
+        <option value="venta">Registrar Venta (10 kg)</option>
+        <option value="recepcion">Recepción de Materia Prima</option>
+        <option value="deposito">Asignar Depósito</option>
+        <option value="fraccionamiento">Fraccionamiento</option>
+        <option value="merma">Bajas / Mermas (PIN)</option>
+        <option value="reporte">Reporte Estratégico</option>
+      </select>
+    </div>
   </nav>
 
   <main class="contenedor">
-    <!-- 1. REGISTRAR VENTA -->
+    <!-- REGISTRAR VENTA -->
     <section id="vista-venta" class="card">
       <div class="card-header">
         <h2>Registrar Venta de Fardos de 10 kg</h2>
@@ -85,7 +97,7 @@
       <div id="comprobanteVentaBox" class="comprobante oculto"></div>
     </section>
 
-    <!-- 2. RECEPCIÓN DE MATERIA PRIMA -->
+    <!-- RECEPCIÓN DE MATERIA PRIMA -->
     <section id="vista-recepcion" class="card oculto">
       <div class="card-header">
         <h2>Recepción de Materia Prima</h2>
@@ -133,7 +145,7 @@
       <div id="comprobanteRecepcionBox" class="comprobante oculto"></div>
     </section>
 
-    <!-- 3. ASIGNAR DEPÓSITO -->
+    <!-- ASIGNAR DEPÓSITO -->
     <section id="vista-deposito" class="card oculto">
       <div class="card-header">
         <h2>Asignar Depósito</h2>
@@ -181,7 +193,7 @@
       <div id="comprobanteDepositoBox" class="comprobante oculto"></div>
     </section>
 
-    <!-- 4. FRACCIONAMIENTO -->
+    <!-- FRACCIONAMIENTO -->
     <section id="vista-fraccionamiento" class="card oculto">
       <div class="card-header">
         <h2>Fraccionamiento</h2>
@@ -230,7 +242,7 @@
       <div id="comprobanteFraccBox" class="comprobante comprobante-ok oculto"></div>
     </section>
 
-    <!-- 5. BAJAS / MERMAS (PIN SUPERVISOR) -->
+    <!-- BAJAS / MERMAS (PIN SUPERVISOR) -->
     <section id="vista-merma" class="card oculto">
       <div class="card-header">
         <h2>Bajas / Mermas (PIN Supervisor)</h2>
@@ -284,7 +296,7 @@
       <div id="comprobanteMermaBox" class="comprobante comprobante-merma oculto"></div>
     </section>
 
-    <!-- 6. REPORTE ESTRATÉGICO -->
+    <!-- REPORTE ESTRATÉGICO -->
     <section id="vista-reporte" class="card oculto">
       <div class="card-header">
         <h2>Reporte Estratégico</h2>
